@@ -41,6 +41,7 @@
           window.currentUser = currentUser;
           window.dispatchEvent(new CustomEvent("ผู้ใช้พร้อมใช้", { detail: currentUser }));
           แสดงชื่อผู้ใช้ใน_navbar(currentUser);
+          ซ่อนเมนูประเภทการลาถ้าไม่ใช่ฝ่ายบุคคล(currentUser);
         })
         .catch(function () {
           // อ่านไฟล์ users ไม่สำเร็จ (เช่น ยังไม่ถูกสร้าง) — ยังให้ใช้งานต่อได้แบบข้อมูลขั้นต่ำ
@@ -48,6 +49,7 @@
           window.currentUser = currentUser;
           window.dispatchEvent(new CustomEvent("ผู้ใช้พร้อมใช้", { detail: currentUser }));
           แสดงชื่อผู้ใช้ใน_navbar(currentUser);
+          ซ่อนเมนูประเภทการลาถ้าไม่ใช่ฝ่ายบุคคล(currentUser);
         });
     });
   }
@@ -72,6 +74,23 @@
           '<button type="button" id="ปุ่มออกจากระบบ" class="btn btn-ghost">ออกจากระบบ</button>';
       } else if (จำนวนครั้งที่ลองแล้ว > 40) {
         // ลองประมาณ 2 วินาทีแล้วยังไม่มี #navUser (หน้านี้ไม่มี nav.js/ไม่มี #nav) — เลิกลอง
+        clearInterval(ตัวจับเวลา);
+      }
+    }, 50);
+  }
+
+  // หัวข้อ 4 (หน้าที่ 4): "ซ่อนหน้านี้จากผู้ที่ไม่ใช่ฝ่ายบุคคล" — เอาลิงก์เมนูออกเลยถ้าไม่ใช่ hr
+  // (ตัวหน้ายังเปิดได้ถ้าพิมพ์ URL ตรงๆ เพราะยังต้องอ่าน leaveTypes ได้ปกติ แต่ไม่มีทางเดินไปเจอจากเมนู)
+  function ซ่อนเมนูประเภทการลาถ้าไม่ใช่ฝ่ายบุคคล(currentUser) {
+    if (currentUser.role === "hr") return;
+    var จำนวนครั้งที่ลองแล้ว = 0;
+    var ตัวจับเวลา = setInterval(function () {
+      จำนวนครั้งที่ลองแล้ว++;
+      var ลิงก์ทั้งหมด = document.querySelectorAll('a[href="leave-types.html"]');
+      if (ลิงก์ทั้งหมด.length > 0) {
+        clearInterval(ตัวจับเวลา);
+        ลิงก์ทั้งหมด.forEach(function (ลิงก์) { ลิงก์.remove(); });
+      } else if (จำนวนครั้งที่ลองแล้ว > 40) {
         clearInterval(ตัวจับเวลา);
       }
     }, 50);
