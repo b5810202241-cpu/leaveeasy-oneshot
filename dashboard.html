@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แดชบอร์ด · LeaveEasy</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/firebase-init.js"></script>
+  <script src="js/auth-guard.js" defer></script>
+  <script src="js/nav.js" defer></script>
+  <script src="js/dashboard.js" defer></script>
+</head>
+<body>
+  <div id="nav"></div>
+
+  <div class="container">
+    <h1>แดชบอร์ด</h1>
+    <p class="subtitle">สรุปสถานะใบขอลาในระบบและข้อมูลล่าสุด</p>
+
+    <div class="card">
+      <h2>สรุปตามสถานะ</h2>
+      <div class="stat-row">
+        <div class="stat">
+          <div style="color: #7a5b00; font-weight: 700; margin-bottom: 6px;">รอพิจารณา</div>
+          <div class="number" id="สถิติรอพิจารณา">0</div>
+        </div>
+        <div class="stat">
+          <div style="color: #1b5e34; font-weight: 700; margin-bottom: 6px;">อนุมัติ</div>
+          <div class="number" id="สถิติอนุมัติ">0</div>
+        </div>
+        <div class="stat">
+          <div style="color: #8b1f1a; font-weight: 700; margin-bottom: 6px;">ไม่อนุมัติ</div>
+          <div class="number" id="สถิติไม่อนุมัติ">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>ใบลา 5 รายการล่าสุด</h2>
+      <div id="ตารางใบลา"></div>
+    </div>
+
+    <div class="btn-row">
+      <a class="btn" href="leave-requests.html">ดูรายการใบลาทั้งหมด</a>
+      <a class="btn btn-ghost" href="index.html">กลับไปหน้าแรก</a>
+    </div>
+  </div>
+</body>
+</html>

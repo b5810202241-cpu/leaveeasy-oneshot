@@ -1,25 +1,39 @@
 // ─────────────────────────────────────────────────────────────
 // js/leave-requests.js — หน้าที่ 1 รายการใบลา
-// สัปดาห์ที่ 6 (ต้นสัปดาห์): อ่านจากข้อมูลปลอมใน js/data.js
+// สัปดาห์ที่ 6: อ่านข้อมูลจริงจาก Firestore (collection leaveRequests)
 // ─────────────────────────────────────────────────────────────
 
 (function () {
   var กล่อง = document.getElementById("ผลลัพธ์");
 
-  // ใบลาจากข้อมูลปลอม บวกกับใบที่เพิ่งยื่นในหน้าถัดไป
-  // (สัปดาห์นี้ยังไม่ต่อฐานข้อมูล ใบที่ยื่นใหม่จึงหายเมื่อปิดเบราว์เซอร์)
-  var ใบลาที่ยื่นใหม่ = JSON.parse(sessionStorage.getItem("ใบลาที่ยื่นใหม่") || "[]");
-  var ใบลาทั้งหมด = window.LEAVE_DATA.leaveRequests.concat(ใบลาที่ยื่นใหม่);
+  // firebase-init.js เป็น module โหลดแบบ async ต้องรอให้พร้อมก่อนถึงจะใช้ window.db ได้
+  if (window.db) { เริ่มทำงาน(); }
+  else { window.addEventListener("firebase-พร้อมใช้", เริ่มทำงาน); }
 
-  // ถ้ามีสถานะติดมาท้าย URL ให้กรองเฉพาะสถานะนั้น
-  var สถานะที่กรอง = ค่าจากURL("status");
-  if (สถานะที่กรอง) {
-    ใบลาทั้งหมด = ใบลาทั้งหมด.filter(function (ใบ) { return ใบ.status === สถานะที่กรอง; });
-    document.querySelector(".subtitle").textContent =
-      "กำลังแสดงเฉพาะใบลาที่สถานะ " + สถานะที่กรอง + " · กดเมนู รายการใบลา เพื่อดูทั้งหมด";
+  function เริ่มทำงาน() {
+    window.fb.getDocs(window.fb.collection(window.db, "leaveRequests"))
+      .then(function (สแนปช็อต) {
+        var ใบลาทั้งหมด = [];
+        สแนปช็อต.forEach(function (เอกสาร) {
+          var ข้อมูล = เอกสาร.data();
+          ข้อมูล.id = เอกสาร.id;
+          ใบลาทั้งหมด.push(ข้อมูล);
+        });
+
+        // ถ้ามีสถานะติดมาท้าย URL ให้กรองเฉพาะสถานะนั้น (กรองฝั่ง client)
+        var สถานะที่กรอง = ค่าจากURL("status");
+        if (สถานะที่กรอง) {
+          ใบลาทั้งหมด = ใบลาทั้งหมด.filter(function (ใบ) { return ใบ.status === สถานะที่กรอง; });
+          document.querySelector(".subtitle").textContent =
+            "กำลังแสดงเฉพาะใบลาที่สถานะ " + สถานะที่กรอง + " · กดเมนู รายการใบลา เพื่อดูทั้งหมด";
+        }
+
+        แสดงตาราง(ใบลาทั้งหมด);
+      })
+      .catch(function (err) {
+        กล่อง.innerHTML = "<p>โหลดข้อมูลไม่สำเร็จ: " + esc(err.message) + "</p>";
+      });
   }
-
-  แสดงตาราง(ใบลาทั้งหมด);
 
   function แสดงตาราง(รายการ) {
     if (รายการ.length === 0) {

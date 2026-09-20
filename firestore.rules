@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // หมายเหตุ: ภาษา Firestore Rules ไม่รองรับชื่อฟังก์ชัน/ตัวแปรเป็นภาษาไทย
+    // (ต่างจาก JavaScript ทั่วไปในโปรเจกต์นี้) จึงตั้งชื่อฟังก์ชันเป็นภาษาอังกฤษ
+    // แต่คอมเมนต์อธิบายเป็นภาษาไทยตามสไตล์เดิมของโปรเจกต์
+
+    // ล็อกอินก่อนเสมอ ถึงจะอ่าน/เขียนอะไรได้ (หัวข้อ 0.2, US-08: "คนที่ไม่ได้ล็อกอิน อ่านข้อมูลไม่ได้เลย")
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // อ่านไฟล์ users ของ uid ที่ระบุ เพื่อเอา role มาเช็คสิทธิ์ (หัวข้อ 2)
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data;
+    }
+
+    function myRole() {
+      return userDoc(request.auth.uid).role;
+    }
+
+    // manager และ hr มีสิทธิ์เหมือนกันในหลายจุดตามตารางหัวข้อ 2
+    function isApproverOrHr() {
+      return isSignedIn() && (myRole() == "manager" || myRole() == "hr");
+    }
+
+    function isHr() {
+      return isSignedIn() && myRole() == "hr";
+    }
+
+    // ===== users — หัวข้อ 2, US-08 =====
+    match /users/{userId} {
+      // ทุกคนที่ล็อกอินอ่านได้ทุกไฟล์ users (ต้อง denormalize ชื่อคนอื่นแสดงบนหน้าจอ ตามหัวข้อ 5.3)
+      allow read: if isSignedIn();
+
+      // สร้างไฟล์ตัวเองได้ตอนสมัครสมาชิกเท่านั้น และ role ตอนสร้างต้องเป็น "employee" เสมอ
+      // (US-08: role เริ่มต้นเป็น employee · ห้ามให้ผู้ใช้เลือก role เอง)
+      allow create: if isSignedIn()
+                    && request.auth.uid == userId
+                    && request.resource.data.role == "employee";
+
+      // แก้ไฟล์ของตัวเองได้ แต่ห้ามเปลี่ยนค่า role ของตัวเอง (กันยกระดับสิทธิ์ตัวเอง)
+      allow update: if isSignedIn()
+                    && request.auth.uid == userId
+                    && request.resource.data.role == resource.data.role;
+
+      allow delete: if false;
+    }
+
+    // ===== leaveTypes — หัวข้อ 2: hr เท่านั้นที่เพิ่ม/แก้/ลบประเภทการลา =====
+    match /leaveTypes/{leaveTypeId} {
+      // ทุกคนที่ล็อกอินอ่านได้ (ต้องใช้แสดงในรายการเลื่อนลงตอนยื่นใบลา US-02)
+      allow read: if isSignedIn();
+      // เพิ่ม/แก้/ลบ ได้เฉพาะฝ่ายบุคคล (US-06)
+      allow write: if isHr();
+    }
+
+    // ===== leaveRequests — หัวข้อ 2, US-08, หัวข้อ 6 =====
+    match /leaveRequests/{leaveRequestId} {
+      // manager/hr อ่านได้ทุกใบ · employee อ่านได้เฉพาะใบของตัวเอง (US-08)
+      allow read: if isSignedIn() &&
+                  (isApproverOrHr() || resource.data.requesterId == request.auth.uid);
+
+      // ทุกบทบาทสร้างใบลาใหม่ได้ แต่ requesterId ต้องเป็นตัวเอง
+      // และ status ตอนสร้างต้องเป็น "รอพิจารณา" เท่านั้น (หัวข้อ 6: ตั้งค่าอัตโนมัติ ห้ามผู้ใช้เลือกเอง)
+      allow create: if isSignedIn()
+                    && request.resource.data.requesterId == request.auth.uid
+                    && request.resource.data.status == "รอพิจารณา";
+
+      // ผู้ขอลาเปลี่ยนสถานะ/แก้ใบลาไม่ได้เลย (หัวข้อ 6) — แก้ได้เฉพาะ manager/hr
+      // และต้องเปลี่ยนเฉพาะช่อง status จาก "รอพิจารณา" ไปเป็น "อนุมัติ"/"ไม่อนุมัติ" เท่านั้น
+      // ห้ามย้อนกลับ ห้ามสลับสถานะกันเอง ห้ามเขียนทับช่องอื่นในไฟล์เดิม (หัวข้อ 6 ข้อ 2 และ 4)
+      allow update: if isApproverOrHr()
+                    && resource.data.status == "รอพิจารณา"
+                    && (request.resource.data.status == "อนุมัติ" || request.resource.data.status == "ไม่อนุมัติ")
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status"]);
+
+      // ลบได้เฉพาะเจ้าของใบ และเฉพาะตอนสถานะยังเป็น "รอพิจารณา" เท่านั้น (US-07)
+      allow delete: if isSignedIn()
+                    && resource.data.requesterId == request.auth.uid
+                    && resource.data.status == "รอพิจารณา";
+
+      // ===== approvals (subcollection ของใบลาแต่ละใบ) — US-05, US-08 =====
+      match /approvals/{approvalId} {
+        // อ่านได้ถ้าอ่านใบลาแม่ได้ (เงื่อนไขเดียวกับด้านบน)
+        allow read: if isSignedIn() &&
+                    (isApproverOrHr() ||
+                     get(/databases/$(database)/documents/leaveRequests/$(leaveRequestId)).data.requesterId == request.auth.uid);
+
+        // เขียนความเห็นได้: manager/hr เขียนได้ทุกใบ · employee เขียนได้เฉพาะใบของตัวเอง
+        // (หัวข้อ 2: "เขียนความเห็นเพิ่มในใบของตัวเอง" เป็นสิทธิ์ของผู้ขอลาด้วย ไม่ใช่แค่ผู้อนุมัติ)
+        // และ authorId ต้องตรงกับคนที่ล็อกอินอยู่จริงเสมอ กันปลอมชื่อผู้เขียน
+        allow create: if request.resource.data.authorId == request.auth.uid &&
+                      (isApproverOrHr() ||
+                       get(/databases/$(database)/documents/leaveRequests/$(leaveRequestId)).data.requesterId == request.auth.uid);
+
+        // ความเห็นที่ส่งแล้วแก้ไข/ลบไม่ได้ (ไม่มีระบุในสเปคว่าแก้ได้ — ถือเป็น immutable)
+        allow update, delete: if false;
+      }
+    }
+  }
+}

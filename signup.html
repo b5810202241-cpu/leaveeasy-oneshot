@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สมัครสมาชิก · LeaveEasy</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/firebase-init.js"></script>
+  <script src="js/signup.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <h1>LeaveEasy ระบบขอลาออนไลน์</h1>
+    <p class="subtitle">สมัครสมาชิกใหม่เพื่อใช้ระบบ</p>
+
+    <div class="card" style="max-width: 400px; margin: 40px auto;">
+      <h2>สมัครสมาชิก</h2>
+
+      <form id="ฟอร์มสมัคร">
+        <label for="ชื่อ">ชื่อ-นามสกุล</label>
+        <input type="text" id="ชื่อ" name="name" required placeholder="เช่น สมชาย ใจดี">
+
+        <label for="อีเมล" style="margin-top: 16px;">อีเมล</label>
+        <input type="email" id="อีเมล" name="email" required placeholder="เช่น somchai@example.com">
+
+        <label for="รหัสผ่าน" style="margin-top: 16px;">รหัสผ่าน</label>
+        <input type="password" id="รหัสผ่าน" name="password" required placeholder="กำหนดรหัสผ่านของคุณ">
+
+        <div id="เตือนข้อผิดพลาด" class="alert alert-error hidden" style="margin-top: 16px;"></div>
+
+        <div class="btn-row" style="margin-top: 24px;">
+          <button type="submit" class="btn">สมัครสมาชิก</button>
+        </div>
+      </form>
+
+      <div style="margin-top: 18px; text-align: center; color: #667380;">
+        <p>มีบัญชีแล้ว? <a href="login.html" style="color: #1f5f8b; text-decoration: none; font-weight: 700;">เข้าสู่ระบบ</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

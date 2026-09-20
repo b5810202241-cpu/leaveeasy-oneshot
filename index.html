@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LeaveEasy ระบบขอลาออนไลน์</title>
   <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/firebase-init.js"></script>
+  <script src="js/auth-guard.js" defer></script>
   <script src="js/nav.js" defer></script>
 </head>
 <body>
@@ -17,7 +19,8 @@
     <div class="card">
       <h2>หน้าจอของระบบ</h2>
       <div class="btn-row">
-        <a class="btn" href="leave-requests.html">รายการใบลา</a>
+        <a class="btn" href="dashboard.html">แดชบอร์ด</a>
+        <a class="btn btn-ghost" href="leave-requests.html">รายการใบลา</a>
         <a class="btn btn-ghost" href="new-leave-request.html">ยื่นใบลาใหม่</a>
         <a class="btn btn-ghost" href="leave-types.html">จัดการประเภทการลา</a>
       </div>
