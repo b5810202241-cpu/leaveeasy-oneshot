@@ -27,11 +27,10 @@ desktop.ini
 test-results/
 playwright-report/
 
-# ⚠️ js/ai-config.js เก็บคีย์ OpenRouter (API key) — ตอนนี้ยังเป็นค่า placeholder จึง commit ได้ปลอดภัย
-# แต่พอใส่คีย์จริงแล้ว ให้เอาบรรทัดด้านล่างนี้ออกจาก comment แล้วรัน:
-#   git rm --cached js/ai-config.js
-# เพื่อไม่ให้คีย์จริงหลุดขึ้น GitHub ในคอมมิตถัดไป
-# js/ai-config.js
+# ── คีย์ OpenRouter (API key) จริง ห้ามหลุดขึ้น GitHub เด็ดขาด ──
+# js/ai-config.js คือไฟล์ที่เก็บคีย์จริง (แต่ละเครื่อง/แต่ละคนตั้งเอง)
+# ดูตัวอย่างโครงสร้างที่ js/ai-config.example.js (ไฟล์นั้น commit ได้ปลอดภัย ไม่มีคีย์จริง)
+js/ai-config.js
 
 
 # ─────────────────────────────────────────────────────────────
