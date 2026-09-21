@@ -7,7 +7,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {
   getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc,
-  updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp
+  updateDoc, deleteDoc, query, where, orderBy, onSnapshot, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword,
@@ -31,7 +31,7 @@ window.auth = getAuth(app);
 // ทุกหน้าเรียกใช้ผ่าน window.fb.xxx(...) ได้เลย ไม่ต้องเขียน import เอง
 window.fb = {
   collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
-  query, orderBy, onSnapshot, serverTimestamp,
+  query, where, orderBy, onSnapshot, serverTimestamp,
   onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut
 };
 

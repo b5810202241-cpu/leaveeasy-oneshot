@@ -6,12 +6,25 @@
 (function () {
   var กล่อง = document.getElementById("ผลลัพธ์");
 
-  // firebase-init.js เป็น module โหลดแบบ async ต้องรอให้พร้อมก่อนถึงจะใช้ window.db ได้
-  if (window.db) { เริ่มทำงาน(); }
-  else { window.addEventListener("firebase-พร้อมใช้", เริ่มทำงาน); }
+  // auth-guard.js อ่าน role ของผู้ใช้มาตั้ง window.currentUser แบบ async (หลัง firebase-พร้อมใช้)
+  // ต้องรอ role ให้พร้อมก่อน ถึงจะรู้ว่าควร query แบบกรองเฉพาะใบของตัวเอง (employee) หรืออ่านได้ทุกใบ (manager/hr)
+  // — ถ้า query แบบไม่กรองทั้งที่เป็น employee, กฎความปลอดภัยของ Firestore จะปฏิเสธทั้ง query ทันที
+  //   เพราะ collection มีใบลาของคนอื่นปนอยู่ด้วย (rules อนุญาตแค่ resource.data.requesterId == auth.uid)
+  if (window.currentUser) { เริ่มทำงาน(); }
+  else { window.addEventListener("ผู้ใช้พร้อมใช้", เริ่มทำงาน); }
 
   function เริ่มทำงาน() {
-    window.fb.getDocs(window.fb.collection(window.db, "leaveRequests"))
+    var เป็นผู้อนุมัติหรือฝ่ายบุคคล = window.currentUser &&
+      (window.currentUser.role === "manager" || window.currentUser.role === "hr");
+
+    var คำสั่ง = เป็นผู้อนุมัติหรือฝ่ายบุคคล
+      ? window.fb.collection(window.db, "leaveRequests")
+      : window.fb.query(
+          window.fb.collection(window.db, "leaveRequests"),
+          window.fb.where("requesterId", "==", window.currentUser.uid)
+        );
+
+    window.fb.getDocs(คำสั่ง)
       .then(function (สแนปช็อต) {
         var ใบลาทั้งหมด = [];
         สแนปช็อต.forEach(function (เอกสาร) {
