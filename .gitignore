@@ -23,6 +23,10 @@ desktop.ini
 # ── แคชของ Firebase CLI ตอน deploy (สร้างใหม่ได้เสมอ ไม่ต้องเก็บ) ──
 .firebase/
 
+# ── ผลลัพธ์การรัน Playwright test (screenshot/trace สร้างใหม่ได้ทุกครั้งที่รัน) ──
+test-results/
+playwright-report/
+
 # ⚠️ js/ai-config.js เก็บคีย์ OpenRouter (API key) — ตอนนี้ยังเป็นค่า placeholder จึง commit ได้ปลอดภัย
 # แต่พอใส่คีย์จริงแล้ว ให้เอาบรรทัดด้านล่างนี้ออกจาก comment แล้วรัน:
 #   git rm --cached js/ai-config.js
