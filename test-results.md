@@ -30,3 +30,17 @@ case2 ต้องใช้บัญชี **manager** ที่ตั้ง rol
 ## หมายเหตุ
 - ทุกเทสต์ (ยกเว้นการล็อกอินด้วยบัญชี manager คงที่ใน case2) จะสมัครบัญชี employee ใหม่ทุกครั้งที่รัน ทำให้มีข้อมูลทดสอบสะสมอยู่ใน prod Firestore/Auth จริง (อีเมลขึ้นต้นด้วย `autotest-...@leaveeasy-nammon.test`, ใบลาขึ้นต้นด้วย `[AUTOTEST...]`) — ยังไม่ได้ลบออก
 - ระหว่างทางพบบั๊กจริงในแอป (หน้ารายการใบลาอ่านไม่ได้สำหรับ employee เพราะ query ไม่กรอง `requesterId`) ได้แก้และ deploy ไปแล้วก่อนหน้านี้ — ดู commit `9401299`
+
+## ยืนยันซ้ำ — 2026-09-23 (checkpoint สัปดาห์ 9)
+
+**รันเมื่อ:** 2026-09-23 (เวลาเครื่อง, SE Asia Standard Time)
+**รันเฉพาะ:** เคสความปลอดภัย 2 ตัว (case4, case5) — เพื่อยืนยันว่ายัง block ได้ถูกต้องกับ prod ปัจจุบัน ก่อนปักหมุดเป็น checkpoint ส่งมอบ
+**คำสั่งที่ใช้รัน:** `npx playwright test tests/case4-unauthenticated-list-blocked.spec.js tests/case5-cross-user-detail-blocked.spec.js --reporter=list`
+**ผลรวม:** 2 ผ่าน / 0 ไม่ผ่าน
+
+| # | ไฟล์เทสต์ | ผล | เวลาที่ใช้ |
+|---|---|---|---|
+| 4 | `tests/case4-unauthenticated-list-blocked.spec.js` | ✅ ผ่าน | 8.6s |
+| 5 | `tests/case5-cross-user-detail-blocked.spec.js` | ✅ ผ่าน | 15.5s |
+
+สรุปสะสม ณ checkpoint นี้: **5/5 เคสผ่าน** (case1–3 ยืนยันล่าสุดเมื่อ 2026-09-21 ด้านบน, case4–5 ยืนยันซ้ำวันนี้) — ปักหมุดเป็น git tag `security-tests-passing-20260923`
